@@ -1,2 +1,6 @@
 # GoProx
-Cdn Proxy and just in time resizer
+
+
+An High Performance JIT image resizer microservice with cache management.
+
+
