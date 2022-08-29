@@ -26,8 +26,7 @@ func initCache() (*bigcache.BigCache, error) {
 func initWebServer(bc *bigcache.BigCache) {
 	config := config2.FromFile("config.json")
 	log.Default().Println(fmt.Sprintf("Starting main webserver on %s:%d", config.ListenIface, config.Port))
-	err := http.ListenAndServe(fmt.Sprintf("%s:%d", config.ListenIface, config.Port), nil)
-	proxError.PanicIfErr(err, log.Default())
+
 	http.HandleFunc(
 		"/compress",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -43,4 +42,20 @@ func initWebServer(bc *bigcache.BigCache) {
 			compressHandler.HandleRequest()
 		},
 	)
+
+	http.HandleFunc("/",
+		func(w http.ResponseWriter, r *http.Request) {
+			relayerHandler := &netHandler.RelayerHandler{
+				Writer:        w,
+				Config:        &config,
+				OriginRequest: r,
+				Cache:         bc,
+			}
+
+			relayerHandler.HandleRequest()
+		})
+
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", config.ListenIface, config.Port), nil)
+	proxError.PanicIfErr(err, log.Default())
+
 }
