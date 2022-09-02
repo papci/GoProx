@@ -21,5 +21,5 @@ func (handler *RelayerHandler) HandleRequest() {
 	}
 
 	handler.Writer.WriteHeader(200)
-	_, _ = handler.Writer.Write(bytes)
+	_, _ = handler.Writer.Write(*bytes)
 }

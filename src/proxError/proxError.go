@@ -13,5 +13,6 @@ func PanicIfErr(err error, logger *log.Logger) {
 }
 
 var (
-	Unknown = errors.New("UK")
+	Unknown     = errors.New("UK")
+	InvalidSize = errors.New("Asked Size is invalid")
 )

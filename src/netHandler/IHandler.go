@@ -20,13 +20,13 @@ func RelocateToSourceUrl(path string, c *config.Config) string {
 	return c.RelayAdress + strings.Join(split[2:l], "/")
 }
 
-func GetFromCacheOrRemote(fullRemoteUrl string, cache *bigcache.BigCache) ([]byte, error) {
+func GetFromCacheOrRemote(fullRemoteUrl string, cache *bigcache.BigCache) (*[]byte, error) {
 	bytes, err := GetFromCache(cache, fullRemoteUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	if bytes == nil || len(bytes) < 0 {
+	if bytes == nil || len(*bytes) < 0 {
 		// no data in cache, get it from remote
 		bytes, err = GetFromRemote(fullRemoteUrl)
 		if err != nil {
@@ -34,7 +34,7 @@ func GetFromCacheOrRemote(fullRemoteUrl string, cache *bigcache.BigCache) ([]byt
 		}
 
 		//store in cache
-		err := cache.Set(fullRemoteUrl, bytes)
+		err := cache.Set(fullRemoteUrl, *bytes)
 		if err != nil {
 			return nil, err
 		}
@@ -44,7 +44,7 @@ func GetFromCacheOrRemote(fullRemoteUrl string, cache *bigcache.BigCache) ([]byt
 	return bytes, nil
 }
 
-func GetFromCache(cache *bigcache.BigCache, key string) ([]byte, error) {
+func GetFromCache(cache *bigcache.BigCache, key string) (*[]byte, error) {
 	bytes, err := cache.Get(key)
 
 	if err != nil {
@@ -54,10 +54,10 @@ func GetFromCache(cache *bigcache.BigCache, key string) ([]byte, error) {
 		return nil, err
 	}
 
-	return bytes, nil
+	return &bytes, nil
 }
 
-func GetFromRemote(fullRemoteUrl string) ([]byte, error) {
+func GetFromRemote(fullRemoteUrl string) (*[]byte, error) {
 	resp, err := http.Get(fullRemoteUrl)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func GetFromRemote(fullRemoteUrl string) ([]byte, error) {
 		return nil, err
 	}
 
-	return bytes, nil
+	return &bytes, nil
 
 }
 
@@ -83,6 +83,11 @@ func WriteBadRequest(writer http.ResponseWriter) error {
 	}
 
 	return nil
+}
+
+func WriteOk(writer http.ResponseWriter, bytes []byte) {
+	writer.WriteHeader(200)
+	_, _ = writer.Write(bytes)
 }
 
 func ComposeRemoteUrl(config *config.Config, path string) string {
